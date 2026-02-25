@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Happy Birthday!</title>
+<style>
+    * {box-sizing:border-box;}
+    body {
+        font-family: 'Comic Sans MS', cursive, sans-serif;
+        background: linear-gradient(to right, #ffafbd, #ffc3a0);
+        margin:0;padding:0;text-align:center;color:#fff;overflow-x:hidden;
+    }
+    .card {
+        background: rgba(0,0,0,0.6);
+        padding: 20px;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        margin: 20px auto;
+        max-width: 90%;
+        animation: float 3s ease-in-out infinite;
+        position: relative;
+        z-index:2;
+    }
+    @keyframes float {0%,100%{transform:translateY(0);}50%{transform:translateY(-10px);}}
+    h1 {font-size:2em; margin-bottom:10px; animation: pop 1s infinite alternate;}
+    @keyframes pop {0%{transform:scale(1);}100%{transform:scale(1.2);}}
+    p {font-size: 1em; margin:8px 0;}
+    input, button {padding:10px;margin:8px 0;width:95%; max-width:300px;border-radius:10px;border:none;}
+    img {max-width:100%; border-radius:15px; margin-top:15px; animation: heartBeat 1s infinite;}
+    @keyframes heartBeat {0%,100%{transform:scale(1);}50%{transform:scale(1.1);}}
+    canvas {position:absolute;top:0;left:0;pointer-events:none;z-index:1;}
+</style>
+</head>
+<body>
+<canvas id="confetti"></canvas>
+
+<div class="card">
+    <h1>Happy Birthday! 🎉</h1>
+    <p>መጋቢት 12 የኔ ልዩ ቀን! ❤️</p>
+    <p>እንኳንም ተወለድሽ የኔ ዉድ💕</p>
+
+    <input type="text" id="message" placeholder="መልእክትሽን ጻፍ">
+    <button onclick="showMessage()">Send Message</button>
+    <p id="displayMessage"></p>
+
+    <input type="file" id="photoInput" accept="image/*" multiple>
+    <button onclick="startSlideshow()">Start Slideshow</button>
+    <img id="displayPhoto" src="" alt="">
+
+    <audio id="bgMusic" controls autoplay loop style="margin-top:10px;width:95%;max-width:300px;">
+        <source src="assets/happy_birthday.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+</div>
+
+<script>
+let slideshowIndex=0;
+let slideshowImages=[];
+function showMessage(){
+    const msg=document.getElementById('message').value;
+    document.getElementById('displayMessage').textContent=msg;
+}
+function startSlideshow(){
+    const files=document.getElementById('photoInput').files;
+    if(files.length>0){
+        slideshowImages=[];
+        for(let i=0;i<files.length;i++){
+            const reader=new FileReader();
+            reader.onload=function(e){
+                slideshowImages.push(e.target.result);
+                if(slideshowImages.length===files.length) displayNextPhoto();
+            }
+            reader.readAsDataURL(files[i]);
+        }
+    }
+}
+function displayNextPhoto(){
+    if(slideshowImages.length===0) return;
+    document.getElementById('displayPhoto').src=slideshowImages[slideshowIndex];
+    slideshowIndex=(slideshowIndex+1)%slideshowImages.length;
+    setTimeout(displayNextPhoto,2000);
+}
+
+// Confetti
+const canvas=document.getElementById('confetti');
+const ctx=canvas.getContext('2d');
+function resizeCanvas(){canvas.width=window.innerWidth;canvas.height=window.innerHeight;}
+window.addEventListener('resize',resizeCanvas);
+resizeCanvas();
+const confettiCount=100;
+const confetti=[];
+for(let i=0;i<confettiCount;i++){
+    confetti.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height-canvas.height,r:Math.random()*6+2,d:Math.random()*confettiCount,color:`hsl(${Math.random()*360},100%,50%)`,tilt:Math.random()*10-10});
+}
+function drawConfetti(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    for(let i=0;i<confettiCount;i++){
+        const f=confetti[i];
+        ctx.beginPath();
+        ctx.lineWidth=f.r;
+        ctx.strokeStyle=f.color;
+        ctx.moveTo(f.x+f.tilt+f.r/2,f.y);
+        ctx.lineTo(f.x+f.tilt,f.y+f.r);
+        ctx.stroke();
+    }
+    updateConfetti();
+}
+function updateConfetti(){
+    for(let i=0;i<confettiCount;i++){
+        const f=confetti[i];
+        f.y+=(Math.cos(f.d)+1+f.r/2)/2;
+        f.x+=Math.sin(0.01*i);
+        if(f.y>canvas.height){confetti[i]={x:Math.random()*canvas.width,y:0,r:f.r,d:f.d,color:f.color,tilt:f.tilt};}
+    }
+    requestAnimationFrame(drawConfetti);
+}
+drawConfetti();
+</script>
+</body>
+</html>
